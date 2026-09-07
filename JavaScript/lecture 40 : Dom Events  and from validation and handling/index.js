@@ -132,7 +132,7 @@ products.forEach((product) => {
     `
 
     // document.querySelector("inner-div").append(dltBtn)
-    // card.append(dltBtn)
+    card.append(dltBtn)
     // card.append(addToCartBtn)
 
     productList.append(card)
