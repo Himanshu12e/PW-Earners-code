@@ -1,5 +1,12 @@
+const todoForm = document.querySelector("#todo-form")
+const todoInput = document.querySelector("#todo-input")
+const todoList = document.querySelector("#todo-list")
+const formBtn = document.querySelector("#form-btn")
+const taskCount = document.querySelector("#task-count")
+const completeCount = document.querySelector("#complete-count")
 
 //'Go to gym', "Revision Web dev", "Take class"
+
 let todos = [
     {
         id: Date.now() + 1,
@@ -18,101 +25,144 @@ let todos = [
     }
 ]
 
-
-const todoForm = document.querySelector("#todo-form")
-const todoInput = document.querySelector("#todo-input")
-const todoList = document.querySelector("#todo-list")
-
+let editTodoId = null  // flag
 todoForm.addEventListener('submit', (e) => {
     e.preventDefault()
 
+    const todoValue = todoInput.value.trim();
 
-    const todoValue = todoInput.value;
-    todos.push(todoValue) // this for saving 
-
-
-    let newTodo = {
-        id: Date.now(),
-        text: todoValue,
-        isCompleted: false
+    // aagr todo is value empty hai means "" then we do !"" -> true and ! is logical not operator
+    if(!todoValue){
+        return
     }
 
-    addTodo(newTodo)
+    console.log({ editTodoId, todoValue });
 
-    // renderTodo() // jab koi naya todo add hoga first updated todos render ho jayenge
+    if (editTodoId) {
+        // editing 
+       todos = todos.map((todo) => {
+            if (todo.id === Number(editTodoId)) {
+                return {
+                    ...todo,
+                    text: todoValue
+                }
+            }
+            return todo
+        })
 
+        
+    } else {
+        //adding
+        let newTodo = {
+            id: Date.now(),
+            text: todoValue,
+            isCompleted: false
+        }
+
+        todos.push(newTodo) // adding new todo to exisiting todos list
+
+        // todos.push({
+        //     id: Date.now(),
+        //     text: todoValue,
+        //     isCompleted: false
+        // })
+    }
+
+    todoInput.value = ""
+    renderTodo() // jab koi naya todo add hoga firse updated todos render ho jayenge
 })
+
+
 
 function renderTodo() {
     todoList.innerHTML = ""
-    todos.forEach(function (todo) {
-        addTodo(todo)
+    //  or 
+    // todoList.textContent = ""
+    todos.forEach((todo) => {
+        const li = document.createElement("li");
+
+        // li.setAttribute("class" , "flex gap-2 border border-slate-300 p-4 rounded-xl")
+        // or
+        li.className = "flex gap-2 border border-slate-300 p-4 rounded-xl"
+
+        // li.setAttribute("data-id", todo.id) // this is jugad
+        // or
+        li.dataset.id = todo.id // this is original method
+
+        li.innerHTML = `
+                    <input data-action="toogle" ${todo.isCompleted ? "checked" : ""} type="checkbox">
+                    <p class="flex-1 ${todo.isCompleted ? "line-through text-red-400" : ""}">${todo.text}</p>
+                    <div class="flex gap-2">
+                        <button data-action="edit" >Edit</button>
+                        <button data-action="delete" >Delete</button>
+                    </div>`
+
+
+        todoList.append(li) // here we want exact/valid html code
     })
+
+    taskCount.textContent = `TASKS (${todos.length})`
+    completeCount.textContent = `COMPLETED: ${todos.filter((todo) => todo.isCompleted).length}`
 }
 
 renderTodo() // jab first time file execute hogi tab existing todos render ho jayenge
 
 
-function addTodo(todo) {
-    const li = document.createElement("li") // <li></li>
-    // li.textContent = todo.text // <li> {Actuall Todo} </li>
-    li.dataset.id = todo.id
-    li.className = `flex gap-2 border border-slate-300 p-4 rounded-xl`
-    li.innerHTML = `
-                    <input data-id=${todo.id} ${todo.isCompleted === true ? 'checked' : ""} type="checkbox">
-                    <p class="flex-1">${todo.text}</p>
-                    <div class="flex gap-2">
-                        <button data-action="edit" data-id=${todo.id}>Edit</button>
-                        <button data-action="delete" data-id=${todo.id}>Delete</button>
-                    </div>
-    `
-    todoList.append(li) // ul -> li
-}
-
-
 // event delegation
 todoList.addEventListener('click', (e) => {
+    e.stopPropagation()
 
-    let li = e.target.closest('li')
-    let btn = e.target.closest('button')
-    let action = btn?.dataset.action;
-    let id = li?.dataset?.id
-    let checkbox = e.target.closest('input[type="checkbox"]') // css selector to select only checkbox input element
+    // console.log(e.target); // e.target -> jis element per click krte ho
+    // console.log(e.currentTarget); // e.currentTarget -> jis element per event listener attached hai
+
+    // console.log(e.target.parentElement);
+
+    const li = e.target.closest('li')
+    const id = li.dataset.id;
 
 
-    if (action === "edit") {
-        // edit wala part
-        console.log("editing....");
-    }
+    let action = e.target.dataset.action
 
     if (action === "delete") {
-        deleteTodo(e, id)
+        deleteTodo(id)
     }
 
-    if (checkbox) {
+    if (action === "edit") {
+        startEdit(id)
+    }
+
+    if (action === "toogle") {
         todos = todos.map((todo) => {
             if (todo.id === Number(id)) {
-                console.log("hii");
                 return {
                     ...todo,
                     isCompleted: !todo.isCompleted
                 }
             }
-
             return todo
         })
-
-        console.log(todos);
+        renderTodo()
     }
 })
 
-function deleteTodo(e, id) {
-    e.target.closest('li').remove()
-
+function deleteTodo(id) {
     todos = todos.filter((todo) => {
         if (todo.id !== Number(id)) {
             return todo
         }
     })
-    // renderTodo() 
+    renderTodo()
+}
+
+function startEdit(id) {
+    editTodoId = id;
+
+    let currentTodo = todos.find((todo) => {
+        if (todo.id === Number(id)) {
+            return todo
+        }
+    })
+
+    todoInput.value = currentTodo.text
+    formBtn.textContent = "Update"
 }
