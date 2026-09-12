@@ -4,6 +4,7 @@ const todoList = document.querySelector("#todo-list")
 const formBtn = document.querySelector("#form-btn")
 const taskCount = document.querySelector("#task-count")
 const completeCount = document.querySelector("#complete-count")
+const cancelBtn = document.querySelector("#cancel-btn")
 
 //'Go to gym', "Revision Web dev", "Take class"
 
@@ -32,7 +33,7 @@ todoForm.addEventListener('submit', (e) => {
     const todoValue = todoInput.value.trim();
 
     // aagr todo is value empty hai means "" then we do !"" -> true and ! is logical not operator
-    if(!todoValue){
+    if (!todoValue) {
         return
     }
 
@@ -40,7 +41,7 @@ todoForm.addEventListener('submit', (e) => {
 
     if (editTodoId) {
         // editing 
-       todos = todos.map((todo) => {
+        todos = todos.map((todo) => {
             if (todo.id === Number(editTodoId)) {
                 return {
                     ...todo,
@@ -50,7 +51,7 @@ todoForm.addEventListener('submit', (e) => {
             return todo
         })
 
-        
+
     } else {
         //adding
         let newTodo = {
@@ -68,7 +69,7 @@ todoForm.addEventListener('submit', (e) => {
         // })
     }
 
-    todoInput.value = ""
+    cancelEdit();
     renderTodo() // jab koi naya todo add hoga firse updated todos render ho jayenge
 })
 
@@ -93,8 +94,8 @@ function renderTodo() {
                     <input data-action="toogle" ${todo.isCompleted ? "checked" : ""} type="checkbox">
                     <p class="flex-1 ${todo.isCompleted ? "line-through text-red-400" : ""}">${todo.text}</p>
                     <div class="flex gap-2">
-                        <button data-action="edit" >Edit</button>
-                        <button data-action="delete" >Delete</button>
+                        <button data-action="edit" class="px-2.5 py-1 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded transition-colors cursor-pointer" >Edit</button>
+                        <button data-action="delete" class="px-2.5 py-1 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded transition-colors cursor-pointer" >Delete</button>
                     </div>`
 
 
@@ -165,4 +166,26 @@ function startEdit(id) {
 
     todoInput.value = currentTodo.text
     formBtn.textContent = "Update"
+    formBtn.className =
+        "px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors cursor-pointer";
+
+    cancelBtn.classList.remove("hidden");
 }
+
+function cancelEdit() {
+    editTodoId = null;
+
+    todoInput.value = "";
+
+    formBtn.textContent = "Add";
+
+    formBtn.className =
+        "px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors cursor-pointer";
+
+    cancelBtn.classList.add("hidden");
+}
+
+
+cancelBtn.addEventListener("click", () => {
+    cancelEdit();
+});
